@@ -10,20 +10,15 @@ export const AppDataSource = new DataSource({
     entities: [__dirname + '/../models/*.ts'],
     synchronize: true,
   })
-  const myDataSource = new DataSource({
-    type: "mongodb",
-    host: "localhost",
-    port: 27017,
-    database: "test",
-  })
-  
-  AppDataSource.initialize()
-      .then(() => {
-          console.log("Data Source has been initialized!")
-      })
-      .catch((err) => {
-          console.error("Error during Data Source initialization", err)
-      })
+
+
+AppDataSource.initialize()
+.then(() => {
+    console.log("Data Source has been initialized!")
+})
+.catch((err) => {
+    console.error("Error during Data Source initialization", err)
+})
   
 export const Manager = AppDataSource.manager
 // export const UserRepository = myDataSource.getRepository(UserEntity)

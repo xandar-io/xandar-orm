@@ -1,8 +1,11 @@
-import { FindOneOptions, getRepository, Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { AppDataSource }  from '../config/connexion'
 
+interface EntityWithRelation<T> {
+  [key: string]: T | undefined;
+}
+
 export abstract class SQLModel {
-  // [key: string]: any;
   public id!: string;
   public createdAt!: Date;
   public updatedAt!: Date;
@@ -41,24 +44,26 @@ export abstract class SQLModel {
       return false;
   }
 
-  public async getRelated(relation: string): Promise<SQLModel | SQLModel[]> {
+  public async getRelated<T extends SQLModel | SQLModel[]>(relation: string): Promise<T> {
     const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
     const entity = await repo.findOne({ where: { id: this.id }, relations: [relation] });
-    if (entity === null) {
+    if (entity === undefined) {
       throw new Error(`No entity found with ID ${this.id}`);
     }
-    return entity[relation];
-  }
+    const entityWithRelation = entity as unknown as EntityWithRelation<T>;
+    return entityWithRelation[relation]!;
+}
 
-  public async setRelated(relation: string, related: SQLModel | SQLModel[]): Promise<void> {
-    const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
-    const entity = await repo.findOne({ where: { id: this.id }, relations: [relation] });
-    if (entity === null) {
-      throw new Error(`No entity found with ID ${this.id}`);
-    }
-    entity[relation] = related;
-    await repo.save(entity);
+public async setRelated<T>(relation: string, related: T): Promise<void> {
+  const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
+  const entity = await repo.findOne({ where: { id: this.id }, relations: [relation] });
+  if (entity === null) {
+    throw new Error(`No entity found with ID ${this.id}`);
   }
+  const entityWithRelation = entity as unknown as EntityWithRelation<T>;
+  entityWithRelation[relation] = related;
+  await repo.save(entityWithRelation);
+}
 
   public static defineRelations(): void {}
 
