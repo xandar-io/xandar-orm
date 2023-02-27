@@ -1,5 +1,5 @@
 import { FindOneOptions, Repository } from 'typeorm';
-import { AppDataSource }  from '../config/connexion'
+import { CustomAppDataSource }  from '../config/connexion'
 
 interface EntityWithRelation<T> {
   [key: string]: T | undefined;
@@ -21,7 +21,7 @@ export abstract class SQLModel {
   }
 
   public async insert(): Promise<SQLModel> {
-    const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this.constructor as typeof SQLModel);
     const entity = repo.create(this);
     const result = await repo.save(entity);
     this.id = result.id;
@@ -29,14 +29,14 @@ export abstract class SQLModel {
   }
 
   public async update(): Promise<SQLModel> {
-    const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this.constructor as typeof SQLModel);
     const entity = repo.create(this);
     await repo.update(this.id, entity);
     return this;
   }
 
   public async delete(): Promise<boolean> {
-    const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this.constructor as typeof SQLModel);
     const result = await repo.delete(this.id);
     if (result && result.affected != null) {
         return result.affected > 0;
@@ -45,7 +45,7 @@ export abstract class SQLModel {
   }
 
   public async getRelated<T extends SQLModel | SQLModel[]>(relation: string): Promise<T> {
-    const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this.constructor as typeof SQLModel);
     const entity = await repo.findOne({ where: { id: this.id }, relations: [relation] });
     if (entity === undefined) {
       throw new Error(`No entity found with ID ${this.id}`);
@@ -55,7 +55,7 @@ export abstract class SQLModel {
 }
 
 public async setRelated<T>(relation: string, related: T): Promise<void> {
-  const repo = AppDataSource.getRepository(this.constructor as typeof SQLModel);
+  const repo = CustomAppDataSource.prototype.getRepository(this.constructor as typeof SQLModel);
   const entity = await repo.findOne({ where: { id: this.id }, relations: [relation] });
   if (entity === null) {
     throw new Error(`No entity found with ID ${this.id}`);
@@ -68,19 +68,19 @@ public async setRelated<T>(relation: string, related: T): Promise<void> {
   public static defineRelations(): void {}
 
   public static async get(id: FindOneOptions<SQLModel>): Promise<SQLModel | null> {
-    const repo = AppDataSource.getRepository(this as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this as typeof SQLModel);
     const entity = await repo.findOne(id);
     return entity;
   }
 
   public static async getAll(): Promise<SQLModel[]> {
-    const repo = AppDataSource.getRepository(this as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this as typeof SQLModel);
     const entities = await repo.find();
     return entities;
   }
 
   public static async query(query: string): Promise<any[]> {
-    const repo = AppDataSource.getRepository(this as typeof SQLModel);
+    const repo = CustomAppDataSource.prototype.getRepository(this as typeof SQLModel);
     return repo.query(query);
   }
 
