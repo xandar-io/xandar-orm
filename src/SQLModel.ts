@@ -1,5 +1,5 @@
 import { FindOneOptions, getRepository, Repository } from 'typeorm';
-import  AppDataSource  from '../config/database'
+import { AppDataSource }  from '../config/connexion'
 
 export abstract class SQLModel {
   // [key: string]: any;
