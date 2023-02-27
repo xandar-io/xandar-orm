@@ -1,4 +1,5 @@
 import { getRepository, MongoRepository, Repository } from 'typeorm';
+import  { AppDataSource }  from '../config/connexion'
 import mongoose, { Model as MongooseModel } from 'mongoose';
 
 export abstract class Model {
@@ -24,7 +25,7 @@ export abstract class Model {
       this.id = model._id;
       return this;
     } else {
-      const repo = getRepository(this.constructor as typeof Model);
+      const repo = AppDataSource.getRepository(this.constructor as typeof Model);
       const entity = repo.create(this);
       const result = await repo.insert(entity);
       this.id = result.identifiers[0].id;
@@ -40,7 +41,7 @@ export abstract class Model {
       );
       return this;
     } else {
-      const repo = getRepository(this.constructor as typeof Model);
+      const repo = AppDataSource.getRepository(this.constructor as typeof Model);
       const entity = repo.create(this);
       await repo.update(this.id, entity);
       return this;
@@ -54,7 +55,7 @@ export abstract class Model {
       });
       return true;
     } else {
-      const repo = getRepository(this.constructor as typeof Model);
+      const repo = AppDataSource.getRepository(this.constructor as typeof Model);
       const result = await repo.delete(this.id);
       if (result && result.affected != null) {
         return result.affected > 0;
@@ -71,7 +72,7 @@ export abstract class Model {
       const related = await model.populate(relation).execPopulate();
       return related[relation];
     } else {
-      const repo = getRepository(this.constructor as typeof Model);
+      const repo = AppDataSource.getRepository(this.constructor as typeof Model);
       const entity = await repo.findOne(this.id, { relations: [relation]});
       return entity[relation];
     }
@@ -90,7 +91,7 @@ export abstract class Model {
         { [relation]: ids },
       );
     } else {
-      const repo = getRepository(this.constructor as typeof Model);
+      const repo = AppDataSource.getRepository(this.constructor as typeof Model);
       const entity = await repo.findOne(this.id, { relations: [relation] });
       entity[relation] = related;
       await repo.save(entity);
@@ -104,7 +105,7 @@ export abstract class Model {
       const model = await (this as typeof Model).mongooseModel.findById(id);
       return model ? new (this as typeof Model)(model.toObject()) : null;
     } else {
-      const repo = getRepository(this as typeof Model);
+      const repo = AppDataSource.getRepository(this as typeof Model);
       const entity = await repo.findOne(id);
       return entity;
     }
@@ -126,7 +127,7 @@ export abstract class Model {
       const connection = mongoose.connection;
       return connection.db.collection(this.collectionName()).find({}).toArray();
     } else {
-      const repo = getRepository(this as typeof Model);
+      const repo = AppDataSource.getRepository(this as typeof Model);
       return repo.query(query);
     }
   }
