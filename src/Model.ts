@@ -1,5 +1,5 @@
 import { getRepository, MongoRepository, Repository } from 'typeorm';
-import  AppDataSource  from '../config/database'
+import  { AppDataSource }  from '../config/connexion'
 import mongoose, { Model as MongooseModel } from 'mongoose';
 
 export abstract class Model {
