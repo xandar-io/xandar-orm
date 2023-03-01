@@ -1,5 +1,5 @@
 import { FindOneOptions, Repository } from 'typeorm';
-import { CustomAppDataSource }  from '../config/connexion'
+import { CustomAppDataSource }  from '../config/connection'
 
 interface EntityWithRelation<T> {
   [key: string]: T | undefined;
